@@ -1,0 +1,5 @@
+*.pyc
+pyvenv.cfg
+Scripts
+Lib
+Include
