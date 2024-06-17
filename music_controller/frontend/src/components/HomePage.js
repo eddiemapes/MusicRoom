@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link, Redirect } from 'react-ro
 
 import CreateRoomPage from './CreateRoomPage';
 import RoomJoinPage from './RoomJoinPage';
+import Room from './Room';
 
-const TestingComponent = () => <p>TESTING TEST</p>
+const TestingComponent = () => <p>This is the home page.</p>
 
 
 export default class HomePage extends Component {
@@ -16,9 +17,10 @@ export default class HomePage extends Component {
         return (
         <Router>
             <Routes>
-                <Route exact path='/' element={<TestingComponent />} />
-                <Route path='/join' component={RoomJoinPage} />
-                <Route path='/create' component={CreateRoomPage} />
+                <Route path='/' element={<TestingComponent />} />
+                <Route path='/join' element={<RoomJoinPage />} />
+                <Route path='/create' element={<CreateRoomPage />} />
+                <Route path='/room/:roomCode' element={<Room />} />
             </Routes>
         </Router>);
     }

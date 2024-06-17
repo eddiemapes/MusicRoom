@@ -22,4 +22,4 @@ export default class App extends Component {
 const appDiv = document.getElementById('app');
 const root = ReactDOM.createRoot(appDiv);
 
-root.render(<App />, appDiv);
+root.render(<App />);
