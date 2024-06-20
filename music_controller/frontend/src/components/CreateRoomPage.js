@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,8 @@ import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import RoomJoinPage from './RoomJoinPage';
 
 
 // Cookie function for CSRF token 
@@ -30,56 +31,40 @@ function getCookie(name) {
 
 const csrfToken = getCookie('csrftoken');
 
-export default class RoomJoinPage extends Component {
-    defaultVotes = 2;
+const CreateRoomPage = (props) => {
+    const defaultVotes = 2;
+    const [guestCanPause, setGuestCanPause] = useState(true);
+    const[votesToSkip, setVotesToSkip] = useState(defaultVotes);
+    const navigate = useNavigate();
 
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            guestCanPause: true,
-            votesToSkip: this.defaultVotes
-        };
+const handleVotesChanged = (e) => {
+    setVotesToSkip(e.target.value);
+};
 
-        // Bind these functions to the class to that it can use 'this' keyword 
-        this.handleRoomButtonPressed = this.handleRoomButtonPressed.bind(this);
-        this.handleVotesChanged = this.handleVotesChanged.bind(this);
-        this.handleGuestCanPauseChange = this.handleGuestCanPauseChange.bind(this);
-    }
+const handleGuestCanPauseChange = (e) => {
+    setGuestCanPause(e.target.value === 'true' ? true : false);
+};
 
-    // Function to handle when the votes field is changed. Updates votesToSkip using the this.setState function 
-    handleVotesChanged(e) {
-        this.setState({
-            votesToSkip: e.target.value
-        });
-    }
+const handleRoomButtonPressed = () => {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            'votes_to_skip': votesToSkip,
+            'guest_can_pause': guestCanPause
+        }),
+    };
+    fetch('http://127.0.0.1:8000/api/create-room', requestOptions)
+    .then((response) => response.json())
+    .then((data) => navigate('/room/' + data.code + '?createHost=true'))
+};
 
-    // Function to handle when the guest can pause field is changed. Updates guestCanPause using the this.setState function 
-    handleGuestCanPauseChange(e) {
-        this.setState({
-            // Set guestCanPause to true if 'true' is passed in, otherwise set to false (JavaScript inline if statement)
-            guestCanPause: e.target.value === 'true' ? true : false
-        });
-    }
-
-    handleRoomButtonPressed() {
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                votes_to_skip: this.state.votesToSkip,
-                guest_can_pause: this.state.guestCanPause
-            })
-        };
-        fetch('/api/create-room', requestOptions).then((response) => response.json()
-        ).then((data) => console.log(data));
-    }
-
-    render() {
-        return (
+    return (
+        
         // Parent grid 
         <Grid container spacing={1}>
             {/* Title  */}
@@ -91,7 +76,7 @@ export default class RoomJoinPage extends Component {
                     <FormHelperText>
                         <span align='center'>Guest Control of Playback State</span>
                     </FormHelperText>
-                    <RadioGroup row defaultValue='true' onChange={this.handleGuestCanPauseChange}>
+                    <RadioGroup row defaultValue='true' onChange={handleGuestCanPauseChange}>
                         <FormControlLabel 
                         value='true' 
                         control={<Radio color='primary' />}
@@ -112,8 +97,8 @@ export default class RoomJoinPage extends Component {
                     <TextField 
                     required={true} 
                     type='number'
-                    onChange={this.handleVotesChanged}
-                    defaultValue={this.defaultVotes} 
+                    onChange={handleVotesChanged}
+                    defaultValue={defaultVotes} 
                     inputProps={{
                         min: 1,
                         style: {textAlign: 'center'}
@@ -125,12 +110,13 @@ export default class RoomJoinPage extends Component {
                 </FormControl>
             </Grid>
             <Grid item xs={12} align='center'>
-                <Button color='primary' variant='contained' onClick={this.handleRoomButtonPressed}>Create a Room</Button>
+                <Button color='primary' variant='contained' onClick={handleRoomButtonPressed}>Create a Room</Button>
             </Grid>
             <Grid item xs={12} align='center'>
                 <Button color='secondary' variant='contained' to='/' component={Link}>Back</Button>
             </Grid>
         </Grid>
-        );
-    }
-}
+    );
+};
+
+export default CreateRoomPage;
