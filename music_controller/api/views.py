@@ -19,7 +19,7 @@ class CreateRoomView(APIView):
         
         if not self.request.session.session_key:
             self.request.session.create()
-            self.request.session.save
+            self.request.session.save()
 
         # Get the data using the serializer class 
         serializer = self.serializer_class(data=request.data)
@@ -86,7 +86,7 @@ class JoinRoom(APIView):
         # Check if a session already exists. If not, create one
         if not self.request.session.session_key:
             self.request.session.create()
-            self.request.session.save
+            self.request.session.save()
 
         code = request.data.get(self.lookup_url_kwarg)
 
