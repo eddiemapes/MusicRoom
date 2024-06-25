@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.http import JsonResponse
 from .models import Room
 from .serializers import RoomSerializer, CreateRoomSerializer
 
@@ -57,14 +58,24 @@ class GetRoom(APIView):
 
     # Override the get method for GET requests 
     def get(self, request, format=None):
+
+        if not self.request.session.session_key:
+            self.request.session.create()
+            self.request.session.save()
         # Takes the parameter from the URL and assigns to variable 
+        # print(f'CREATED KEY: {self.request.session.session_key}')
+        session_id = self.request.COOKIES.get('sessionid')
+        print(f'THIS KEY: {session_id}')
         code = request.GET.get(self.lookup_url_kwarg)
         create_host = request.GET.get('createHost')
 
-        self.serializer_class
+        # self.serializer_class
         if code:
             room = Room.objects.filter(code=code)
+            this_room_code = room[0].host
+            print(f'ROOM CODE: {this_room_code}')
             if room:
+                # TODO: Revert this using session key 
                 data = RoomSerializer(room[0]).data
                 # Sets 'is_host' = true/false if the session key equals the host
                 if create_host == 'true':
@@ -81,25 +92,55 @@ class GetRoom(APIView):
     
 class JoinRoom(APIView):
     lookup_url_kwarg = 'code'
-
+    
     def post(self, request, format=None):
+        
+        
         # Check if a session already exists. If not, create one
         if not self.request.session.session_key:
             self.request.session.create()
             self.request.session.save()
 
         code = request.data.get(self.lookup_url_kwarg)
-
+        # print(code)
         if code:
             room_result = Room.objects.filter(code=code)
-            if room_result:
+            print(room_result)
+            if len(room_result) > 0:
+                print('i am here')
                 room = room_result[0]
                 self.request.session['room_code'] = code
                 return Response({'message': 'Room Joined!'}, status=status.HTTP_200_OK)
             # If a room was not found 
-            return Response({'Bad Request': 'Unable to find room'})
+            return Response({'Bad Request': 'Unable to find room'}, status=status.HTTP_404_NOT_FOUND)
         # If room code was not sent 
         return Response({'Bad Request': 'Invalid POST data, did not find code key'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UserInRoom(APIView):
+    def get(self, request, format=None):
+        # Check if a session already exists. If not, create one
+        if not self.request.session.session_key:
+            self.request.session.create()
+            self.request.session.save()
+
+        data = {
+            'code': self.request.session.get('room_code')
+        }
+        return JsonResponse(data=data, status=status.HTTP_200_OK)
+    
+class LeaveRoom(APIView):
+    def post(self, request, format=None):
+        if 'room_code' in self.request.session:
+            code = self.request.session.pop('room_code')
+            print(code)
+            host_id = self.request.session.session_key
+            print(host_id)
+            room_results = Room.objects.filter(host=host_id)
+            if len(room_results):
+                room = room_results[0]
+                room.delete()
+        return Response({'Message': 'Success'}, status=status.HTTP_200_OK)
 
 
 

@@ -5,6 +5,9 @@ import { Link, useNavigate } from 'react-router-dom';
 export default class RoomJoinPage extends Component {
   constructor(props) {
     super(props);
+
+    this.csrfToken = this.getCookie('csrftoken');
+
     this.state = {
       roomCode: '',
       error: ''
@@ -12,6 +15,25 @@ export default class RoomJoinPage extends Component {
     this.handleTextFieldChange = this.handleTextFieldChange.bind(this);
     this.handleRoomButtonPressed = this.handleRoomButtonPressed.bind(this);
   }
+
+  
+
+// Cookie function for CSRF token 
+getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
 
 
@@ -26,18 +48,19 @@ export default class RoomJoinPage extends Component {
       method: 'POST',
       headers: {
             'Content-Type': 'application/json',
-            // 'X-CSRFToken': csrfToken
+            'X-CSRFToken': this.csrfToken
         },
       body: JSON.stringify({
         code: this.state.roomCode
       })
     };
-    fetch('/api/join-room/', requestOptions).then((response) => {
+    fetch('http://127.0.0.1:8000/api/join-room/', requestOptions).then((response) => {
       if (response.ok) {
-        url = '127.0.0.1:8000/room/' + this.state.roomCode;
-        console.log(url);
-        window.location.assign(url); 
+        const url = `/room/${this.state.roomCode}`;
+        console.log('redirecting to: ' + url);
+        window.location.replace(url);
       } else {
+        console.log(response.error);
         this.setState({error: 'Room not found.'});
       }
     }).catch((error) => {
