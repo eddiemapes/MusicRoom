@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { Grid, Button, Typography } from '@mui/material';
 
-const Room = () => {
+const Room = ({ leaveRoomCallback }) => {
     const navigate = useNavigate();
     const { roomCode } = useParams();
     const [votesToSkip, setVotesToSkip] = useState(2);
@@ -15,19 +15,15 @@ const Room = () => {
         // Function for retrieving room data
         const getRoomDetails = async () => {
             try {
+                const hostToken = localStorage.getItem('host_token');
                 let url = `http://localhost:8000/api/get-room?code=${roomCode}`;
-                
-                const searchParams = new URLSearchParams(location.search);
-                const createHost = searchParams.get('createHost');
-                console.log('Create host:' + createHost);
-
-                if (createHost === 'true') {
-                    url += '&createHost=true';
-                }
-
+                if (hostToken) {
+                    url = url + `&host_token=${hostToken}`;
+                };
                 const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch room details');
+                    leaveRoomCallback();
+                    navigate('/');
                 }
                 const data = await response.json();
                 console.log(data);
@@ -63,12 +59,16 @@ const Room = () => {
     const csrfToken = getCookie('csrftoken');
 
     const leaveRoom = () => {
+        const hostToken = localStorage.getItem('host_token');
         const requestOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
-            }
+            },
+            body: JSON.stringify({
+                'host_token': hostToken
+            })
         };
         fetch('/api/leave-room/', requestOptions).then((response) => {
             navigate('/');

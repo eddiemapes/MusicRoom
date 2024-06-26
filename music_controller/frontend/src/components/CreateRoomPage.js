@@ -61,7 +61,10 @@ const handleRoomButtonPressed = () => {
     };
     fetch('http://127.0.0.1:8000/api/create-room/', requestOptions)
     .then((response) => response.json())
-    .then((data) => navigate('/room/' + data.code + '?createHost=true'))
+    .then((data) => {
+        localStorage.setItem('host_token', data.host)
+        navigate('/room/' + data.code);
+    });
 };
 
     return (
