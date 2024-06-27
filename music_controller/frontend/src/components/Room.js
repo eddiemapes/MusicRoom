@@ -78,6 +78,7 @@ const Room = ({ leaveRoomCallback }) => {
     };
 
     function updateShowSettings(value) {
+        console.log(guestCanPause);
         setShowSettings(value);
     }
 
@@ -95,8 +96,8 @@ const Room = ({ leaveRoomCallback }) => {
             <Grid item xs={12} align='center'>
                 <CreateRoomPage 
                 update={true} 
-                votesToSkip={votesToSkip} 
-                guestCanPause={guestCanPause} 
+                votes={votesToSkip} 
+                pause={guestCanPause}
                 roomCode={roomCode} 
                 updateCallBack={null}
                 />
