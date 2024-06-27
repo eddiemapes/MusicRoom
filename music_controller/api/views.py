@@ -5,14 +5,14 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 import uuid
 from .models import Room
-from .serializers import RoomSerializer, CreateRoomSerializer
+from .serializers import RoomSerializer, CreateRoomSerializer, UpdateRoomSerializer
 
 class RoomView(generics.ListCreateAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
 # POST request for creating rooms 
-class CreateRoomView(APIView):
+class CreateRoom(APIView):
     serializer_class = CreateRoomSerializer
 
     # Override post method 
@@ -73,7 +73,6 @@ class GetRoom(APIView):
                 data = RoomSerializer(room[0]).data
                 # Sets 'is_host' = true/false if the host key equals the room host
                 is_host = (host == this_room_code)
-                print(is_host)
                 data['is_host'] = is_host
                 # If a room with the passed-in code is successfully found 
                 return Response(data=data, status=status.HTTP_200_OK)
@@ -91,7 +90,6 @@ class JoinRoom(APIView):
         # Check if a session already exists. If not, create one
         if not self.request.session.session_key:
             self.request.session.create()
-            self.request.session.save()
 
         code = request.data.get(self.lookup_url_kwarg)
         if code:
@@ -126,11 +124,40 @@ class LeaveRoom(APIView):
             if 'room_code' in self.request.session:
                 code = self.request.session.pop('room_code')
                 host_id = self.request.session.session_key
-                room_results = Room.objects.filter(code=code)
-                if len(room_results):
-                    room = room_results[0]
+                queryset = Room.objects.filter(code=code)
+                if queryset.exists():
+                    room = queryset[0]
                     room.delete()
         return Response({'Message': 'Success'}, status=status.HTTP_200_OK)
+    
+class UpdateRoom(APIView):
+    serializer_class = UpdateRoomSerializer
+
+    def patch(self, request, format=None):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            guest_can_pause = serializer.data.get('guest_can_pause')
+            votes_to_skip = serializer.data.get('votes_to_skip')
+            code = serializer.data.get('code')
+            host = serializer.data.get('host')
+
+            queryset = Room.objects.filter(code=code)
+            if not queryset.exists():
+                return Response({'Message': 'Room does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+            room = queryset[0]
+            # Check the host data against the room host to make sure the host is making the request
+            if host != room.host:
+                return Response({'Permission Denied': 'Only room host can update settings'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Update fields 
+            room.guest_can_pause = guest_can_pause
+            room.votes_to_skip = votes_to_skip
+            # Save object 
+            room.save(update_fields=['guest_can_pause', 'votes_to_skip'])
+            return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
+            
+        return Response({'Bad Request': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

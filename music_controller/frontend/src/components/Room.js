@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { Grid, Button, Typography } from '@mui/material';
+
+import CreateRoomPage from './CreateRoomPage';
 
 const Room = ({ leaveRoomCallback }) => {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ const Room = ({ leaveRoomCallback }) => {
     const [votesToSkip, setVotesToSkip] = useState(2);
     const [guestCanPause, setGuestCanPause] = useState(false);
     const [isHost, setIsHost] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         // Function for retrieving room data
@@ -75,6 +77,40 @@ const Room = ({ leaveRoomCallback }) => {
         });
     };
 
+    function updateShowSettings(value) {
+        setShowSettings(value);
+    }
+
+    function renderSettingsButton() {
+        return (
+            <Grid item xs={12} align='center'>
+                <Button variant='contained' color='primary' onClick={() => updateShowSettings(true)}>Settings</Button>
+            </Grid>
+        );
+    }
+
+    function renderSettings() {
+        return (
+        <Grid container spacing={1}>
+            <Grid item xs={12} align='center'>
+                <CreateRoomPage 
+                update={true} 
+                votesToSkip={votesToSkip} 
+                guestCanPause={guestCanPause} 
+                roomCode={roomCode} 
+                updateCallBack={null}
+                />
+            </Grid>
+            <Grid item xs={12} align='center'>
+                <Button variant='contained' color='secondary' onClick={() => updateShowSettings(false)}>Close</Button>
+            </Grid>
+        </Grid>
+        );
+    }
+
+    if (showSettings) {
+        return renderSettings();
+    }
     return (
             <Grid container spacing={1}>
                 <Grid item xs={12} align='center'>
@@ -89,12 +125,13 @@ const Room = ({ leaveRoomCallback }) => {
                 <Grid item xs={12} align='center'>
                     <Typography variant='h6' component='h6'>Is Host: {isHost.toString()}</Typography>
                 </Grid>
+                {isHost ? renderSettingsButton() : null}
                 <Grid item xs={12} align='center' >
                     <Button variant='contained' color='secondary' to='/' component={Link} onClick={leaveRoom}>Leave Room</Button>
                 </Grid>
             </Grid>
 
-    );
+            );
 };
 
 export default Room;
