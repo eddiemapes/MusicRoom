@@ -13,30 +13,33 @@ const Room = ({ leaveRoomCallback }) => {
     const [isHost, setIsHost] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
 
-    useEffect(() => {
-        // Function for retrieving room data
-        const getRoomDetails = async () => {
-            try {
-                const hostToken = localStorage.getItem('host_token');
-                let url = `http://localhost:8000/api/get-room?code=${roomCode}`;
-                if (hostToken) {
-                    url = url + `&host_token=${hostToken}`;
-                };
-                const response = await fetch(url);
-                if (!response.ok) {
-                    leaveRoomCallback();
-                    navigate('/');
-                }
-                const data = await response.json();
-                console.log(data);
-                setVotesToSkip(data.votes_to_skip);
-                setGuestCanPause(data.guest_can_pause);
-                setIsHost(data.is_host);
-            } catch (error) {
-                console.error('Error fetching room details:', error.message);
-                // Handle error condition (e.g., show error message)
+    // Function for retrieving room data
+    const getRoomDetails = async () => {
+        try {
+            const hostToken = localStorage.getItem('host_token');
+            let url = `http://localhost:8000/api/get-room?code=${roomCode}`;
+            if (hostToken) {
+                url = url + `&host_token=${hostToken}`;
+            };
+            const response = await fetch(url);
+            if (!response.ok) {
+                leaveRoomCallback();
+                navigate('/');
             }
-        };
+            const data = await response.json();
+            console.log(data);
+            setVotesToSkip(data.votes_to_skip);
+            setGuestCanPause(data.guest_can_pause);
+            setIsHost(data.is_host);
+        } catch (error) {
+            console.error('Error fetching room details:', error.message);
+            // Handle error condition (e.g., show error message)
+        }
+    };
+
+
+
+    useEffect(() => {
 
         getRoomDetails();
     }, [roomCode]); // Run effect whenever roomCode changes
@@ -78,7 +81,6 @@ const Room = ({ leaveRoomCallback }) => {
     };
 
     function updateShowSettings(value) {
-        console.log(guestCanPause);
         setShowSettings(value);
     }
 
@@ -99,7 +101,7 @@ const Room = ({ leaveRoomCallback }) => {
                 votes={votesToSkip} 
                 pause={guestCanPause}
                 roomCode={roomCode} 
-                updateCallBack={null}
+                updateCallBack={getRoomDetails}
                 />
             </Grid>
             <Grid item xs={12} align='center'>

@@ -43,18 +43,14 @@ const HomePage = () => {
     // Set the room code state to null if the room is left 
     function clearRoomCode() {
         setRoomCode(null);
+        console.log(`Room code: ${roomCode}`);
     }
 
     return (
         <Router>
             <Routes>
                 <Route path='/' element={
-                    roomCode ? (
-                        <Navigate to={`/room/${roomCode}`} />
-                    ) : (
-                        renderHomePage()
-                    )
-                } />
+                    renderHomePage()} />
                 <Route path='/join' element={<RoomJoinPage />} />
                 <Route path='/create' element={<CreateRoomPage />} />
                 <Route path='/room/:roomCode' element={<RoomWithProps />} />
@@ -64,9 +60,16 @@ const HomePage = () => {
 
 export default HomePage;
 
- 
 
 /* <Route path='/' element={
-                    renderHomePage()} /> */
+                    roomCode ? (
+                        <Navigate to={`/room/${roomCode}`} />
+                    ) : (
+                        renderHomePage()
+                    )
+                } /> */
+ 
+
+
 
 /* <Route path='/room/:roomCode' element={<Room />} /> */

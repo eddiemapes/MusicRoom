@@ -10,6 +10,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Collapse } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import Alert from '@mui/lab/Alert';
 import RoomJoinPage from './RoomJoinPage';
 
 
@@ -33,7 +34,7 @@ function getCookie(name) {
 
 const csrfToken = getCookie('csrftoken');
 
-const CreateRoomPage = ({ votes=2, pause=true, update=false, roomCode=null, updateCallback={} }) => {
+const CreateRoomPage = ({ votes=2, pause=true, update=false, roomCode=null, updateCallBack }) => {
     // Set up state 
     const [guestCanPause, setGuestCanPause] = useState(pause);
     const [votesToSkip, setVotesToSkip] = useState(votes);
@@ -84,14 +85,15 @@ const handleUpdateRoomButtonPressed = () => {
             'code': roomCode
         }),
     };
-    fetch('http://127.0.0.1:8000/api/update-room/', requestOptions)
-    .then((response) => {
+    fetch('http://127.0.0.1:8000/api/update-room/', requestOptions).then((response) => {
         if (response.ok) {
             setsuccessMsg('Successfully updated room settings!');
         } else {
             setErrorMsg('Error updating room...');
         }
+        updateCallBack();
     });
+    
 };
 
     function renderCreateButton() {
@@ -122,7 +124,9 @@ const handleUpdateRoomButtonPressed = () => {
         <Grid container spacing={1}>
             <Grid item xs={12} align='center'>
                 <Collapse in={errorMsg != '' || successMsg != ''}>
-                    {successMsg}
+                    {successMsg != '' ? 
+                    (<Alert severity='success' onClose={() => {setsuccessMsg('')}}>{successMsg}</Alert>) 
+                    : (<Alert severity='error'>{errorMsg}</Alert>)}
                 </Collapse>
                 <Typography component='h4' variant='h4'>{title}</Typography>
             </Grid>

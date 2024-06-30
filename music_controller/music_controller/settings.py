@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'api',
     'frontend',
+    'spotify',
     'rest_framework'
 ]
 

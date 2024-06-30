@@ -59,8 +59,6 @@ class GetRoom(APIView):
 
     # Override the get method for GET requests 
     def get(self, request, format=None):
-
-        
         # Takes the parameter from the URL and assigns to variable
         host = self.request.GET.get('host_token', {})
         code = request.GET.get(self.lookup_url_kwarg)
@@ -69,10 +67,10 @@ class GetRoom(APIView):
         if code:
             room = Room.objects.filter(code=code)
             if room:
-                this_room_code = room[0].host
+                this_room_host = room[0].host
                 data = RoomSerializer(room[0]).data
                 # Sets 'is_host' = true/false if the host key equals the room host
-                is_host = (host == this_room_code)
+                is_host = (host == this_room_host)
                 data['is_host'] = is_host
                 # If a room with the passed-in code is successfully found 
                 return Response(data=data, status=status.HTTP_200_OK)
@@ -109,7 +107,6 @@ class UserInRoom(APIView):
         # Check if a session already exists. If not, create one
         if not self.request.session.session_key:
             self.request.session.create()
-            self.request.session.save()
 
         data = {
             'code': self.request.session.get('room_code')
