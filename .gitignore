@@ -3,4 +3,4 @@ pyvenv.cfg
 Scripts
 Lib
 Include
-node_modules
+node_modules/
