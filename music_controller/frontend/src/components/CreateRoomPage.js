@@ -10,7 +10,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Collapse } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import RoomJoinPage from './RoomJoinPage';
 
 

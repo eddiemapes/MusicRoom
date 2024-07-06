@@ -71,7 +71,10 @@ class GetRoom(APIView):
                 data = RoomSerializer(room[0]).data
                 # Sets 'is_host' = true/false if the host key equals the room host
                 is_host = (host == this_room_host)
-                data['is_host'] = is_host
+                if is_host:
+                    data['is_host'] = 'true'
+                else:
+                    data['is_host'] = 'false'
                 # If a room with the passed-in code is successfully found 
                 return Response(data=data, status=status.HTTP_200_OK)
             # If a room with the passed-in code is NOT successfully found 

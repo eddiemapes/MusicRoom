@@ -12,6 +12,7 @@ const Room = ({ leaveRoomCallback }) => {
     const [guestCanPause, setGuestCanPause] = useState(false);
     const [isHost, setIsHost] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [spotifyAuthenticated, setSpotifyAuthenticated] = useState(false);
 
     // Function for retrieving room data
     const getRoomDetails = async () => {
@@ -30,19 +31,41 @@ const Room = ({ leaveRoomCallback }) => {
             console.log(data);
             setVotesToSkip(data.votes_to_skip);
             setGuestCanPause(data.guest_can_pause);
-            setIsHost(data.is_host);
+            console.log('host data from api: ' + data.is_host);
+            const isHostValue = data.is_host === 'true';
+            setIsHost(isHostValue);
         } catch (error) {
             console.error('Error fetching room details:', error.message);
             // Handle error condition (e.g., show error message)
         }
     };
 
-
+    // Call backend to authenticate spotify 
+    function authenticateSpotify() {
+        fetch('/spotify/is-authenticated')
+        .then((response) => response.json()
+        .then((data) => {
+            setSpotifyAuthenticated(data.status);
+            if (!data.status) {
+                fetch('/spotify/get-auth-url')
+                .then((response) => response.json())
+                .then((data) => {
+                    window.location.replace(data.url);
+                })
+            }
+        }))
+    }
 
     useEffect(() => {
-
         getRoomDetails();
     }, [roomCode]); // Run effect whenever roomCode changes
+
+    useEffect(() => {
+        console.log('isHost updated:', isHost);
+        if (isHost) {
+            authenticateSpotify();
+        }
+    }, [isHost]);
 
     // Cookie function for CSRF token 
     function getCookie(name) {

@@ -6,7 +6,8 @@ from .credentials import CLIENT_ID, CLIENT_SECRET
 
 def get_user_tokens(session_id):
     user_tokens = SpotifyToken.objects.get(user=session_id)
-
+    print(user_tokens)
+    # user_tokens = user_tokens[0]
     return user_tokens
 
 
@@ -22,7 +23,6 @@ def update_or_create_user_tokens(session_id, access_token, token_type, expires_i
         tokens.save(update_fields=['access_token', 'refresh_token','expires_in' ,'token_type'])
     else:
         tokens = SpotifyToken.objects.create(user=session_id, refresh_token=refresh_token, access_token=access_token, expires_in=expires_in, token_type=token_type)
-        tokens.save()
 
 def is_spotify_authenticated(session_id):
     tokens = get_user_tokens(session_id)
@@ -49,5 +49,6 @@ def refresh_spotify_token(session_id):
     token_type = response.get('token_type')
     expires_in = response.get('expires_in')
     refresh_token = response.get('refresh_token')
+    print(refresh_token)
 
-    update_or_create_user_tokens(session_id, access_token, token_type, expires_in, refresh_token)
+    update_or_create_user_tokens(session_id=session_id, access_token=access_token, token_type=token_type, expires_in=expires_in, refresh_token=refresh_token)
